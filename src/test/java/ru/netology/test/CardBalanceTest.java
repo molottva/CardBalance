@@ -34,7 +34,7 @@ public class CardBalanceTest {
         assertTrue(dashboard.matchBalance(1, secondCardBalance - 1));
         transferPage = dashboard.transfer(1);
         transferPage.successTransfer("1", userInfo.getCard(0));
-        assertTrue(dashboard.matchBalance(0, firstCardBalance - 1));
+        assertTrue(dashboard.matchBalance(0, firstCardBalance));
         assertTrue(dashboard.matchBalance(1, secondCardBalance));
     }
 }
