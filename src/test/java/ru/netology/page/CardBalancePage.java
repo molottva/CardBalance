@@ -3,11 +3,9 @@ package ru.netology.page;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 
-import java.util.Objects;
-
 import static com.codeborne.selenide.Selenide.$$x;
 import static com.codeborne.selenide.Selenide.$x;
-import static java.lang.Integer.*;
+import static java.lang.Integer.parseInt;
 
 public class CardBalancePage {
     private ElementsCollection cards = $$x("//li[@class='list__item']/div");
@@ -21,11 +19,7 @@ public class CardBalancePage {
         return parseInt(card[6]);
     }
 
-    public boolean matchBalance(int indexCard, int expectedBalance) {
-        return getBalance(indexCard) == expectedBalance;
-    }
-
-    public TransferPage transfer(int indexCardTo) {
+    public TransferPage transferClick(int indexCardTo) {
         actionButtons.get(indexCardTo).click();
         return new TransferPage();
     }
