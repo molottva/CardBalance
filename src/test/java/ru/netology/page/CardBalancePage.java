@@ -3,6 +3,7 @@ package ru.netology.page;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 
+import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$$x;
 import static com.codeborne.selenide.Selenide.$x;
 import static java.lang.Integer.parseInt;
@@ -13,6 +14,10 @@ public class CardBalancePage {
     private SelenideElement reloadButton = $x("//button[@data-test-id='action-reload']");
     private SelenideElement errorNotification = $x("//div[@data-test-id='error-notification']");
 
+    public CardBalancePage() {
+        reloadButton.should(visible);
+    }
+
     public int getBalance(int indexCard) {
         reloadButton.click();
         String[] card = cards.get(indexCard).toString().split(" ");
@@ -22,5 +27,9 @@ public class CardBalancePage {
     public TransferPage transferClick(int indexCardTo) {
         actionButtons.get(indexCardTo).click();
         return new TransferPage();
+    }
+
+    public void reloadBalance() {
+        reloadButton.click();
     }
 }

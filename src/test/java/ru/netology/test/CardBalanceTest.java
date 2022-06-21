@@ -5,80 +5,199 @@ import org.testng.annotations.Test;
 import ru.netology.data.UserInfo;
 import ru.netology.page.CardBalancePage;
 import ru.netology.page.LoginPage;
-import ru.netology.page.TransferPage;
 
 import static com.codeborne.selenide.Selenide.open;
+import static java.lang.Math.abs;
+import static org.testng.AssertJUnit.assertEquals;
 
 public class CardBalanceTest {
-    UserInfo userInfo = new UserInfo();
+    UserInfo user = new UserInfo();
     CardBalancePage dashboard;
-    TransferPage transferPage = new TransferPage();
-    int balanceCardFrom;
 
     @BeforeMethod
     public void setup() {
         open("http://localhost:9999/");
-        LoginPage loginPage = new LoginPage();
-        dashboard = loginPage.login(userInfo).verify(userInfo);
+        var loginPage = new LoginPage();
+        var verifyPage = loginPage.login(user);
+        dashboard = verifyPage.verify(user);
     }
 
     @Test
-    public void shouldTransferBoundaryValue1() {
-        transferPage.successTransfer(-1, 0, 1);
-        transferPage.successTransfer(-1, 1, 0);
-    }
+    public void shouldTransferAbsolutValue() {
+        int indexCardTo = 0;
+        int indexCardFrom = 1;
+        int cardBalanceTo = dashboard.getBalance(indexCardTo);
+        int cardBalanceFrom = dashboard.getBalance(indexCardFrom);
+        int amount = -1;
 
-    //todo bug
-    @Test
-    public void notShouldTransferBoundaryValue2() {
-        transferPage.failedTransfer(0, 0, 1);
-    }
+        var transferPage = dashboard.transferClick(indexCardTo);
+        dashboard = transferPage.successTransfer(amount, user.getCard(indexCardFrom));
+        dashboard.reloadBalance();
+        assertEquals(cardBalanceTo + abs(amount), dashboard.getBalance(indexCardTo));
+        assertEquals(cardBalanceFrom - abs(amount), dashboard.getBalance(indexCardFrom));
 
-    @Test
-    public void shouldTransferBoundaryValue3() {
-        transferPage.successTransfer(1, 0, 1);
-        transferPage.successTransfer(1, 1, 0);
-    }
-
-    @Test
-    public void shouldTransferBoundaryValue4() {
-        balanceCardFrom = dashboard.getBalance(1);
-        transferPage.successTransfer(balanceCardFrom - 1, 0, 1);
-        transferPage.successTransfer(balanceCardFrom - 1, 1, 0);
+        var revertTransferPage = dashboard.transferClick(indexCardFrom);
+        dashboard = revertTransferPage.successTransfer(amount, user.getCard(indexCardTo));
+        dashboard.reloadBalance();
+        assertEquals(cardBalanceTo, dashboard.getBalance(indexCardTo));
+        assertEquals(cardBalanceFrom, dashboard.getBalance(indexCardFrom));
     }
 
     @Test
-    public void shouldTransferBoundaryValue5() {
-        balanceCardFrom = dashboard.getBalance(1);
-        transferPage.successTransfer(balanceCardFrom, 0, 1);
-        transferPage.successTransfer(balanceCardFrom, 1, 0);
+    public void notShouldTransferNullAmount() {
+        int indexCardTo = 0;
+        int indexCardFrom = 1;
+        int cardBalanceTo = dashboard.getBalance(indexCardTo);
+        int cardBalanceFrom = dashboard.getBalance(indexCardFrom);
+        int amount = 0;
+
+        var transferPage = dashboard.transferClick(indexCardTo);
+        dashboard = transferPage.failedTransfer(amount, user.getCard(indexCardFrom));
+        dashboard.reloadBalance();
+        assertEquals(cardBalanceTo + abs(amount), dashboard.getBalance(indexCardTo));
+        assertEquals(cardBalanceFrom - abs(amount), dashboard.getBalance(indexCardFrom));
     }
 
-    //todo bug
     @Test
-    public void notShouldTransferBoundaryValue6() {
-        balanceCardFrom = dashboard.getBalance(1);
-        transferPage.successTransfer(balanceCardFrom + 1, 0, 1);
-        transferPage.failedTransfer(balanceCardFrom + 1, 1, 0);
+    public void shouldTransferBoundaryValueOne() {
+        int indexCardTo = 0;
+        int indexCardFrom = 1;
+        int cardBalanceTo = dashboard.getBalance(indexCardTo);
+        int cardBalanceFrom = dashboard.getBalance(indexCardFrom);
+        int amount = 1;
+
+        var transferPage = dashboard.transferClick(indexCardTo);
+        dashboard = transferPage.successTransfer(amount, user.getCard(indexCardFrom));
+        dashboard.reloadBalance();
+        assertEquals(cardBalanceTo + abs(amount), dashboard.getBalance(indexCardTo));
+        assertEquals(cardBalanceFrom - abs(amount), dashboard.getBalance(indexCardFrom));
+
+        var revertTransferPage = dashboard.transferClick(indexCardFrom);
+        dashboard = revertTransferPage.successTransfer(amount, user.getCard(indexCardTo));
+        dashboard.reloadBalance();
+        assertEquals(cardBalanceTo, dashboard.getBalance(indexCardTo));
+        assertEquals(cardBalanceFrom, dashboard.getBalance(indexCardFrom));
     }
 
-    //todo bug
     @Test
-    public void notShouldTransferSingleCard1() {
-        balanceCardFrom = dashboard.getBalance(0);
-        transferPage.failedTransfer(balanceCardFrom / 2, 0, 0);
+    public void shouldTransferBoundaryValueTwo() {
+        int indexCardTo = 0;
+        int indexCardFrom = 1;
+        int cardBalanceTo = dashboard.getBalance(indexCardTo);
+        int cardBalanceFrom = dashboard.getBalance(indexCardFrom);
+        int amount = cardBalanceFrom - 1;
+
+        var transferPage = dashboard.transferClick(indexCardTo);
+        dashboard = transferPage.successTransfer(amount, user.getCard(indexCardFrom));
+        dashboard.reloadBalance();
+        assertEquals(cardBalanceTo + abs(amount), dashboard.getBalance(indexCardTo));
+        assertEquals(cardBalanceFrom - abs(amount), dashboard.getBalance(indexCardFrom));
+
+        var revertTransferPage = dashboard.transferClick(indexCardFrom);
+        dashboard = revertTransferPage.successTransfer(amount, user.getCard(indexCardTo));
+        dashboard.reloadBalance();
+        assertEquals(cardBalanceTo, dashboard.getBalance(indexCardTo));
+        assertEquals(cardBalanceFrom, dashboard.getBalance(indexCardFrom));
     }
 
-    //todo bug
     @Test
-    public void notShouldTransferSingleCard2() {
-        balanceCardFrom = dashboard.getBalance(0);
-        transferPage.failedTransfer(-balanceCardFrom / 2, 0, 0);
+    public void shouldTransferBoundaryValueThree() {
+        int indexCardTo = 0;
+        int indexCardFrom = 1;
+        int cardBalanceTo = dashboard.getBalance(indexCardTo);
+        int cardBalanceFrom = dashboard.getBalance(indexCardFrom);
+        int amount = cardBalanceFrom;
+
+        var transferPage = dashboard.transferClick(indexCardTo);
+        dashboard = transferPage.successTransfer(amount, user.getCard(indexCardFrom));
+        dashboard.reloadBalance();
+        assertEquals(cardBalanceTo + abs(amount), dashboard.getBalance(indexCardTo));
+        assertEquals(cardBalanceFrom - abs(amount), dashboard.getBalance(indexCardFrom));
+
+        var revertTransferPage = dashboard.transferClick(indexCardFrom);
+        dashboard = revertTransferPage.successTransfer(amount, user.getCard(indexCardTo));
+        dashboard.reloadBalance();
+        assertEquals(cardBalanceTo, dashboard.getBalance(indexCardTo));
+        assertEquals(cardBalanceFrom, dashboard.getBalance(indexCardFrom));
+    }
+
+    @Test
+    public void notShouldTransferBoundaryValueFour() {
+        int indexCardTo = 0;
+        int indexCardFrom = 1;
+        int cardBalanceTo = dashboard.getBalance(indexCardTo);
+        int cardBalanceFrom = dashboard.getBalance(indexCardFrom);
+        int amount = cardBalanceFrom + 1;
+
+        var transferPage = dashboard.transferClick(indexCardTo);
+        dashboard = transferPage.successTransfer(amount, user.getCard(indexCardFrom));
+        dashboard.reloadBalance();
+        assertEquals(cardBalanceTo + abs(amount), dashboard.getBalance(indexCardTo));
+        assertEquals(cardBalanceFrom - abs(amount), dashboard.getBalance(indexCardFrom));
+
+        var revertTransferPage = dashboard.transferClick(indexCardFrom);
+        dashboard = revertTransferPage.failedTransfer(amount, user.getCard(indexCardTo));
+        dashboard.reloadBalance();
+        assertEquals(cardBalanceTo, dashboard.getBalance(indexCardTo));
+        assertEquals(cardBalanceFrom, dashboard.getBalance(indexCardFrom));
+    }
+
+    @Test
+    public void notShouldTransferSingleCard() {
+        int indexCardTo = 0;
+        int indexCardFrom = 0;
+        int cardBalanceTo = dashboard.getBalance(indexCardTo);
+        int cardBalanceFrom = dashboard.getBalance(indexCardFrom);
+        int amount = cardBalanceFrom / 2;
+
+        var transferPage = dashboard.transferClick(indexCardTo);
+        dashboard = transferPage.failedTransfer(amount, user.getCard(indexCardFrom));
+        dashboard.reloadBalance();
+        assertEquals(cardBalanceTo, dashboard.getBalance(indexCardTo));
+        assertEquals(cardBalanceFrom, dashboard.getBalance(indexCardFrom));
     }
 
     @Test
     public void shouldCancelTransfer() {
-        balanceCardFrom = dashboard.getBalance(1);
-        transferPage.cancelTransfer(balanceCardFrom / 2, 0, 1);
+        int indexCardTo = 0;
+        int indexCardFrom = 1;
+        int cardBalanceTo = dashboard.getBalance(indexCardTo);
+        int cardBalanceFrom = dashboard.getBalance(indexCardFrom);
+        int amount = cardBalanceFrom / 2;
+
+        var transferPage = dashboard.transferClick(indexCardTo);
+        dashboard = transferPage.cancelTransfer(amount, user.getCard(indexCardFrom));
+        dashboard.reloadBalance();
+        assertEquals(cardBalanceTo, dashboard.getBalance(indexCardTo));
+        assertEquals(cardBalanceFrom, dashboard.getBalance(indexCardFrom));
+    }
+
+    @Test
+    public void notShouldTransferEmptyAmount() {
+        int indexCardTo = 0;
+        int indexCardFrom = 0;
+        int cardBalanceTo = dashboard.getBalance(indexCardTo);
+        int cardBalanceFrom = dashboard.getBalance(indexCardFrom);
+
+        var transferPage = dashboard.transferClick(indexCardTo);
+        dashboard = transferPage.failedTransferWitEmptyAmount(user.getCard(indexCardFrom));
+        dashboard.reloadBalance();
+        assertEquals(cardBalanceTo, dashboard.getBalance(indexCardTo));
+        assertEquals(cardBalanceFrom, dashboard.getBalance(indexCardFrom));
+    }
+
+    @Test
+    public void notShouldTransferEmptyCardFrom() {
+        int indexCardTo = 0;
+        int indexCardFrom = 0;
+        int cardBalanceTo = dashboard.getBalance(indexCardTo);
+        int cardBalanceFrom = dashboard.getBalance(indexCardFrom);
+        int amount = cardBalanceFrom / 2;
+
+        var transferPage = dashboard.transferClick(indexCardTo);
+        dashboard = transferPage.failedTransferWithEmptyCardFrom(amount);
+        dashboard.reloadBalance();
+        assertEquals(cardBalanceTo, dashboard.getBalance(indexCardTo));
+        assertEquals(cardBalanceFrom, dashboard.getBalance(indexCardFrom));
     }
 }

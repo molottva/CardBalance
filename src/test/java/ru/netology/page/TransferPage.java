@@ -16,45 +16,60 @@ public class TransferPage {
     private SelenideElement cancelButton = $x("//button[@data-test-id='action-cancel']");
     private SelenideElement errorNotification = $x("//div[@data-test-id='error-notification']");
     private SelenideElement errorButton = $x("//div[@data-test-id='error-notification']/button");
-    UserInfo userInfo = new UserInfo();
-    CardBalancePage dashboard = new CardBalancePage();
-    private int balanceCartTo;
-    private int balanceCartFrom;
 
-    public void transfer(int amount, int indexCardTo, int indexCardFrom) {
-        balanceCartTo = dashboard.getBalance(indexCardTo);
-        balanceCartFrom = dashboard.getBalance(indexCardFrom);
-        dashboard.transferClick(indexCardTo);
-        amountInput.val(String.valueOf(amount));
-        fromInput.val(userInfo.getCard(indexCardFrom));
+    public TransferPage() {
+        amountInput.should(visible);
+        fromInput.should(visible);
+        toInput.should(visible);
+        transferButton.should(visible);
+        cancelButton.should(visible);
+        errorNotification.should(hidden);
+        errorButton.should(hidden);
     }
 
-    public void successTransfer(int amount, int indexCardTo, int indexCardFrom) {
-        this.transfer(amount, indexCardTo, indexCardFrom);
+    public CardBalancePage successTransfer(int amount, String cardFrom) {
+        amountInput.val(String.valueOf(amount));
+        fromInput.val(cardFrom);
         transferButton.click();
         errorNotification.should(hidden);
-        matchBalance(indexCardTo, balanceCartTo + Math.abs(amount));
-        matchBalance(indexCardFrom, balanceCartFrom - Math.abs(amount));
+        return new CardBalancePage();
     }
 
-    public void failedTransfer(int amount, int indexCardTo, int indexCardFrom) {
-        this.transfer(amount, indexCardTo, indexCardFrom);
+    public CardBalancePage failedTransfer(int amount, String cardFrom) {
+        amountInput.val(String.valueOf(amount));
+        fromInput.val(cardFrom);
         transferButton.click();
         errorNotification.should(visible);
         errorButton.click();
-        matchBalance(indexCardTo, balanceCartTo);
-        matchBalance(indexCardFrom, balanceCartFrom);
+        errorNotification.should(hidden);
+        return new CardBalancePage();
     }
 
-    public void cancelTransfer(int amount, int indexCardTo, int indexCardFrom) {
-        this.transfer(amount, indexCardTo, indexCardFrom);
+    public CardBalancePage cancelTransfer(int amount, String cardFrom) {
+        amountInput.val(String.valueOf(amount));
+        fromInput.val(cardFrom);
         cancelButton.click();
         errorNotification.should(hidden);
-        matchBalance(indexCardTo, balanceCartTo);
-        matchBalance(indexCardFrom, balanceCartFrom);
+        return new CardBalancePage();
     }
 
-    public void matchBalance(int indexCard, int expectedBalance) {
-        assertEquals(dashboard.getBalance(indexCard), expectedBalance);
+    public CardBalancePage failedTransferWitEmptyAmount(String cardFrom) {
+        fromInput.val(cardFrom);
+        transferButton.click();
+        errorNotification.should(visible);
+        errorButton.click();
+        errorNotification.should(hidden);
+        cancelButton.click();
+        return new CardBalancePage();
+    }
+
+    public CardBalancePage failedTransferWithEmptyCardFrom(int amount) {
+        amountInput.val(String.valueOf(amount));
+        transferButton.click();
+        errorNotification.should(visible);
+        errorButton.click();
+        errorNotification.should(hidden);
+        cancelButton.click();
+        return new CardBalancePage();
     }
 }
